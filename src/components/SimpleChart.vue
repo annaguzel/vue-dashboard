@@ -9,7 +9,6 @@
       >
       </apexchart>
     </div>
-    <hr />
   </div>
 </template>
 
@@ -42,9 +41,9 @@ export default {
     ],
   }),
   async created() {
-    this.options.xaxis.categories = this.$props.categories;
-    this.series[0].data = this.$props.seriesData;
-    this.options.title.text = this.$props.title;
+    this.options.xaxis.categories = this.categories;
+    this.series[0].data = this.seriesData;
+    this.options.title.text = this.title;
   },
 };
 </script>

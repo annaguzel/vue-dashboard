@@ -8,7 +8,6 @@
         :series="series"
       ></apexchart>
     </div>
-    <hr />
   </div>
 </template>
 
@@ -40,9 +39,8 @@ export default {
     },
   }),
   async created() {
-    this.chartOptions.labels = this.$props.categories;
-    this.series = this.$props.seriesData;
-    this.options.title.text = this.$props.title;
+    this.chartOptions.labels = this.categories;
+    this.series = this.seriesData;
   },
 };
 </script>

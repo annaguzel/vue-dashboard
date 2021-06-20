@@ -1,21 +1,31 @@
 <template>
-  <div id="app">
-    <h1>Vue Apexcharts Demo</h1>
-    <div v-for="chart in charts" :key="chart.title">
-      <SimpleChart
-        v-if="chart.type === 'line' || chart.type === 'bar'"
-        :categories="chart.data.categories"
-        :seriesData="chart.data.seriesData"
-        :title="chart.title"
-        :chartType="chart.type"
-      />
-      <PieChart
-        v-else-if="chart.type === 'pie'"
-        :categories="chart.data.categories"
-        :seriesData="chart.data.seriesData"
-        :title="chart.title"
-        :chartType="chart.type"
-      />
+  <div id="app" class="flex">
+    <h1 class="w-full">Vue Dynamic Dashboard</h1>
+    <div
+      v-for="chart in charts"
+      :key="chart.title"
+      :class="'chart-container w-' + chart.size"
+    >
+      <div v-if="chart.data">
+        <SimpleChart
+          v-if="chart.type === 'line' || chart.type === 'bar'"
+          :categories="chart.data.categories"
+          :seriesData="chart.data.seriesData"
+          :title="chart.title"
+          :chartType="chart.type"
+        />
+        <PieChart
+          v-else-if="chart.type === 'pie'"
+          :categories="chart.data.categories"
+          :seriesData="chart.data.seriesData"
+          :title="chart.title"
+          :chartType="chart.type"
+        />
+        <Table
+          v-else-if="chart.type === 'table'"
+          :contents="chart.data.contents"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -23,83 +33,52 @@
 <script>
 import SimpleChart from "./components/SimpleChart.vue";
 import PieChart from "./components/PieChart.vue";
-
+import Table from "./components/Table.vue";
 export default {
   name: "App",
+
   components: {
     SimpleChart,
     PieChart,
+    Table,
+  },
+  created() {
+    this.getMeta();
   },
   data() {
     return {
-      charts: [
-        {
-          title: "Monthly Stock Pricing",
-          type: "line",
-          data: {
-            categories: [
-              "Jan",
-              "Feb",
-              "Mar",
-              "Apr",
-              "May",
-              "Jun",
-              "Jul",
-              "Aug",
-              "Sep",
-              "Oct",
-              "Nov",
-              "Dec",
-            ],
-
-            seriesData: [55, 62, 89, 66, 98, 72, 101, 75, 94, 120, 117, 139],
-          },
-        },
-        {
-          title: "Monthly Sales",
-          type: "bar",
-          data: {
-            categories: [
-              "Jan",
-              "Feb",
-              "Mar",
-              "Apr",
-              "May",
-              "Jun",
-              "Jul",
-              "Aug",
-              "Sep",
-              "Oct",
-              "Nov",
-              "Dec",
-            ],
-
-            seriesData: [
-              1200,
-              4500,
-              2500,
-              1900,
-              3400,
-              2777,
-              5000,
-              4100,
-              3670,
-              1234,
-              4200,
-              2790,
-            ],
-          },
-        },
-        {
-          type: "pie",
-          title: "Sales by Team",
-          data: {
-            categories: ["Team A", "Team B", "Team C", "Team D", "Team E"],
-            seriesData: [44, 55, 13, 43, 22],
-          },
-        },
-      ],
+      charts: null,
+      getDataIndex: 0,
     };
+  },
+  methods: {
+    getMeta() {
+      this.$http.get("https://demo1368642.mockable.io/charts/").then((res) => {
+        this.charts = res.data.sort((a, b) => (a.order > b.order ? 1 : -1));
+        const orderedIds = res.data
+          .sort((a, b) => (a.priority > b.priority ? 1 : -1))
+          .map((item) => item.id);
+        this.getData(orderedIds);
+      });
+    },
+    getData(ids) {
+      if (this.getDataIndex < this.charts.length) {
+        this.$http
+          .get(
+            `http://demo1368642.mockable.io/charts/${ids[this.getDataIndex]}/`
+          )
+          .then((res) => {
+            this.charts = this.charts.map((item) => {
+              if (item.id === ids[this.getDataIndex]) {
+                item.data = res.data;
+              }
+              return item;
+            });
+            this.getDataIndex++;
+            this.getData(ids);
+          });
+      }
+    },
   },
 };
 </script>
@@ -112,5 +91,25 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+.flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+.w-full {
+  width: 100%;
+}
+.w-2\/3 {
+  width: 66.666%;
+}
+.w-1\/3 {
+  width: 33.333%;
+}
+.w-1\/2 {
+  width: 50%;
+}
+.chart-container {
+  padding: 5em;
+  align-self: center;
 }
 </style>
